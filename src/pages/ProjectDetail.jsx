@@ -76,13 +76,14 @@ function ProjectDetail() {
           {project.pdf_path && (
              <div className="flex gap-3">
                <button
-                 onClick={() => window.open(`http://localhost/irs-aaua/api/uploads/${project.pdf_path}`, '_blank')}
-                 className="bg-[#1B5E20] text-white text-sm px-5 py-2 rounded-md hover:bg-green-800 transition"
-               >
-                 View PDF
-               </button>
-               <a
-                 href={`http://localhost/irs-aaua/api/download.php?file=${project.pdf_path}`}
+                  onClick={() => window.open(project.pdf_path, '_blank')}
+                  className="bg-[#1B5E20] text-white text-sm px-5 py-2 rounded-md hover:bg-green-800 transition"
+                >
+                  View PDF
+                </button>
+                  <a      
+                  href={project.pdf_path}
+                  download
                   className="border border-[#1B5E20] text-[#1B5E20] text-sm px-5 py-2 rounded-md hover:bg-green-50 transition"
                 >
                   Download

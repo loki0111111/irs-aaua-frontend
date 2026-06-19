@@ -92,6 +92,60 @@ function AdminDashboard() {
     } catch (err) { console.error(err) }
   }
 
+  const uploadToCloudinary = async (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', 'irs_aaua_uploads')
+  formData.append('resource_type', 'raw')
+
+  const res = await fetch('https://api.cloudinary.com/v1_1/dn83fy6fw/raw/upload', {
+    method: 'POST',
+    body: formData,
+  })
+  const data = await res.json()
+  return data.secure_url
+}
+
+const handleProjectSubmit = async () => {
+  if (!projectForm.title || !projectForm.authors || !projectForm.department_id || !projectForm.year) {
+    setFormError('Please fill in Title, Authors, Department and Year')
+    return
+  }
+  setFormError('')
+
+  const formData = new FormData()
+  formData.append('title', projectForm.title)
+  formData.append('authors', projectForm.authors)
+  formData.append('abstract', projectForm.abstract)
+  formData.append('department_id', projectForm.department_id)
+  formData.append('supervisor_id', projectForm.supervisor_id)
+  formData.append('year', projectForm.year)
+
+  // Upload PDF to Cloudinary first
+  if (file) {
+    try {
+      const pdfUrl = await uploadToCloudinary(file)
+      formData.append('pdf_url', pdfUrl)
+    } catch (err) {
+      setFormError('PDF upload failed. Try again.')
+      return
+    }
+  }
+
+  try {
+    if (editProject) {
+      formData.append('id', editProject.id)
+      await API.post('/update.php', formData)
+    } else {
+      await API.post('/upload.php', formData)
+    }
+    resetProjectForm()
+    fetchProjects()
+  } catch (err) {
+    setFormError('Upload failed. Please try again.')
+  }
+}
+
   const handleProjectSubmit = async () => {
     if (!projectForm.title || !projectForm.authors || !projectForm.department_id || !projectForm.year) {
       setFormError('Please fill in Title, Authors, Department and Year')
