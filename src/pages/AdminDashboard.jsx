@@ -10,9 +10,14 @@ function AdminDashboard() {
 
   // Projects state
   const [projects, setProjects] = useState([])
+  const [uploading, setUploading] = useState(false)
   const [projectsLoading, setProjectsLoading] = useState(true)
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [editProject, setEditProject] = useState(null)
+  const [addingSupervisor, setAddingSupervisor] = useState(false)
+  const [deletingSupervisorId, setDeletingSupervisorId] = useState(null)
+  const [addingDepartment, setAddingDepartment] = useState(false)
+  const [deletingDepartmentId, setDeletingDepartmentId] = useState(null)
   const [projectForm, setProjectForm] = useState({
     title: '', abstract: '', authors: '', supervisor_id: '', department_id: '', year: ''
   })
@@ -112,6 +117,7 @@ const handleProjectSubmit = async () => {
     return
   }
   setFormError('')
+  setUploading(true)
 
   const formData = new FormData()
   formData.append('title', projectForm.title)
@@ -127,6 +133,7 @@ const handleProjectSubmit = async () => {
       formData.append('pdf_url', pdfUrl)
     } catch (err) {
       setFormError('PDF upload failed. Try again.')
+      setUploading(false)
       return
     }
   }
@@ -142,50 +149,59 @@ const handleProjectSubmit = async () => {
     fetchProjects()
   } catch (err) {
     setFormError('Upload failed. Please try again.')
+  } finally {
+    setUploading(false)
   }
 }
 
 
-
   // Department handlers
   const handleAddDepartment = async () => {
-    if (!newDepartment.trim()) return
-    try {
-      await API.post('/add_department.php', { name: newDepartment.trim() })
-      setNewDepartment('')
-      fetchDepartments()
-    } catch (err) { console.error(err) }
-  }
+  if (!newDepartment.trim() || addingDepartment) return
+  setAddingDepartment(true)
+  try {
+    await API.post('/add_department.php', { name: newDepartment.trim() })
+    setNewDepartment('')
+    fetchDepartments()
+  } catch (err) { console.error(err) }
+  finally { setAddingDepartment(false) }
+}
 
   const handleDeleteDepartment = async (id) => {
-    if (!confirm('Delete this department? Supervisors in it will be unlinked.')) return
-    try {
-      await API.delete(`/delete_department.php?id=${id}`)
-      fetchDepartments()
-      fetchSupervisors()
-    } catch (err) { console.error(err) }
-  }
+  if (!confirm('Delete this department?')) return
+  setDeletingDepartmentId(id)
+  try {
+    await API.delete(`/delete_department.php?id=${id}`)
+    fetchDepartments()
+    fetchSupervisors()
+  } catch (err) { console.error(err) }
+  finally { setDeletingDepartmentId(null) }
+}
 
   // Supervisor handlers
   const handleAddSupervisor = async () => {
-    if (!supervisorForm.name.trim()) return
-    try {
-      const res = await API.post('/add_supervisor.php', { name: supervisorForm.name })
-      console.log('add supervisor response:', res.data)
-      setSupervisorForm({ name: '' })
-      fetchSupervisors()
-    } catch (err) { 
-      console.error('add supervisor error:', err.response?.data || err.message)
-    }
+  if (!supervisorForm.name.trim() || addingSupervisor) return
+  setAddingSupervisor(true)
+  try {
+    await API.post('/add_supervisor.php', { name: supervisorForm.name })
+    setSupervisorForm({ name: '' })
+    fetchSupervisors()
+  } catch (err) {
+    console.error('add supervisor error:', err.response?.data || err.message)
+  } finally {
+    setAddingSupervisor(false)
   }
+}
 
   const handleDeleteSupervisor = async (id) => {
-    if (!confirm('Delete this supervisor?')) return
-    try {
-      await API.delete(`/delete_supervisor.php?id=${id}`)
-      fetchSupervisors()
-    } catch (err) { console.error(err) }
-  }
+  if (!confirm('Delete this supervisor?')) return
+  setDeletingSupervisorId(id)
+  try {
+    await API.delete(`/delete_supervisor.php?id=${id}`)
+    fetchSupervisors()
+  } catch (err) { console.error(err) }
+  finally { setDeletingSupervisorId(null) }
+}
 
   // Filtered projects
   const filteredProjects = projects.filter(p => {
@@ -333,9 +349,9 @@ const handleProjectSubmit = async () => {
                   <p className="text-red-500 text-xs mb-3">{formError}</p>
                 )}
                 <div className="flex gap-3">
-                  <button onClick={handleProjectSubmit} className={btnPrimary}>
-                    {editProject ? 'Update' : 'Upload'}
-                  </button>
+                  <button onClick={handleProjectSubmit} className={btnPrimary} disabled={uploading}>
+                      {uploading ? (file ? 'Uploading PDF...' : 'Saving...') : (editProject ? 'Update' : 'Upload')}
+                    </button>
                   <button onClick={resetProjectForm} className={btnSecondary}>Cancel</button>
                 </div>
               </div>
@@ -391,7 +407,9 @@ const handleProjectSubmit = async () => {
                   onChange={e => setNewDepartment(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddDepartment()}
                   className={inputClass} />
-                <button onClick={handleAddDepartment} className={btnPrimary}>Add</button>
+                <button onClick={handleAddDepartment} className={btnPrimary} disabled={addingDepartment}>
+                  {addingDepartment ? 'Adding...' : 'Add'}
+                </button>
               </div>
             </div>
 
@@ -412,7 +430,9 @@ const handleProjectSubmit = async () => {
                       <tr key={d.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-4 py-3 text-gray-800">{d.name}</td>
                         <td className="px-4 py-3">
-                          <button onClick={() => handleDeleteDepartment(d.id)} className={btnDanger}>Delete</button>
+                          <button onClick={() => handleDeleteDepartment(d.id)} className={btnDanger} disabled={deletingDepartmentId === d.id}>
+                             {deletingDepartmentId === d.id ? 'Deleting...' : 'Delete'}
+                           </button>
                         </td>
                       </tr>
                     ))}
@@ -435,7 +455,9 @@ const handleProjectSubmit = async () => {
                 <input placeholder="Supervisor name" value={supervisorForm.name}
                   onChange={e => setSupervisorForm({ name: e.target.value })}
                   className={inputClass} />
-                <button onClick={handleAddSupervisor} className={btnPrimary}>Add</button>
+                <button onClick={handleAddSupervisor} className={btnPrimary} disabled={addingSupervisor}>
+                  {addingSupervisor ? 'Adding...' : 'Add'}
+                </button>
               </div>
             </div>
 
@@ -456,7 +478,9 @@ const handleProjectSubmit = async () => {
                       <tr key={s.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-4 py-3 text-gray-800">{s.name}</td>
                         <td className="px-4 py-3">
-                          <button onClick={() => handleDeleteSupervisor(s.id)} className={btnDanger}>Delete</button>
+                          <button onClick={() => handleDeleteSupervisor(s.id)} className={btnDanger} disabled={deletingSupervisorId === s.id}>
+                            {deletingSupervisorId === s.id ? 'Deleting...' : 'Delete'}
+                          </button>
                         </td>
                       </tr>
                     ))}
