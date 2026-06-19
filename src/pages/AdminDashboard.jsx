@@ -121,7 +121,6 @@ const handleProjectSubmit = async () => {
   formData.append('supervisor_id', projectForm.supervisor_id)
   formData.append('year', projectForm.year)
 
-  // Upload PDF to Cloudinary first
   if (file) {
     try {
       const pdfUrl = await uploadToCloudinary(file)
@@ -146,34 +145,7 @@ const handleProjectSubmit = async () => {
   }
 }
 
-  const handleProjectSubmit = async () => {
-    if (!projectForm.title || !projectForm.authors || !projectForm.department_id || !projectForm.year) {
-      setFormError('Please fill in Title, Authors, Department and Year')
-      return
-    }
-    setFormError('')
-    const formData = new FormData()
-    formData.append('title', projectForm.title)
-    formData.append('authors', projectForm.authors)
-    formData.append('abstract', projectForm.abstract)
-    formData.append('department_id', projectForm.department_id)
-    formData.append('supervisor_id', projectForm.supervisor_id)
-    formData.append('year', projectForm.year)
-    if (file) formData.append('pdf', file)
 
-    try {
-      if (editProject) {
-        formData.append('id', editProject.id)
-        await API.post('/update.php', formData)
-      } else {
-        await API.post('/upload.php', formData)
-      }
-      resetProjectForm()
-      fetchProjects()
-    } catch (err) {
-      setFormError('Upload failed. Please try again.')
-    }
-  }
 
   // Department handlers
   const handleAddDepartment = async () => {
