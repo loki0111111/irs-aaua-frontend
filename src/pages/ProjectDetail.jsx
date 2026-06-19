@@ -80,10 +80,9 @@ function ProjectDetail() {
                   className="bg-[#1B5E20] text-white text-sm px-5 py-2 rounded-md hover:bg-green-800 transition"
                 >
                   View PDF
-                </button>
-                  <a      
-                  href={project.pdf_path}
-                  download
+                </button>               
+                <a
+                  href={project.pdf_path + '?fl_attachment=true'}
                   className="border border-[#1B5E20] text-[#1B5E20] text-sm px-5 py-2 rounded-md hover:bg-green-50 transition"
                 >
                   Download
