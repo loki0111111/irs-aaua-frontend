@@ -82,10 +82,13 @@ function ProjectDetail() {
                   View PDF
                 </button>               
                 <a
-                  href={project.pdf_path + '?fl_attachment=true'}
-                  className="border border-[#1B5E20] text-[#1B5E20] text-sm px-5 py-2 rounded-md hover:bg-green-50 transition"
-                >
-                  Download
+                   href={project.pdf_path}
+                    download
+                    target="_blank"
+                    rel="noreferrer"
+                    className="border border-[#1B5E20] text-[#1B5E20] text-sm px-5 py-2 rounded-md hover:bg-green-50 transition"
+                  >
+                    Download
                 </a>
              </div>
            )}
