@@ -101,6 +101,7 @@ function AdminDashboard() {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('upload_preset', 'irs_aaua_uploads')
+  formData.append('resource_type', 'raw')
   // Remove resource_type: 'raw' — let Cloudinary handle it as auto
 
   const res = await fetch('https://api.cloudinary.com/v1_1/dn83fy6fw/raw/upload', {
