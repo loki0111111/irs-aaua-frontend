@@ -173,8 +173,8 @@ const handleProjectSubmit = async () => {
   setDeletingDepartmentId(id)
   try {
     await API.delete(`/delete_department.php?id=${id}`)
-    fetchDepartments()
-    fetchSupervisors()
+    setDepartments(prev => prev.filter(d => d.id !== id)) // remove immediately
+    fetchDepartments() // sync in background
   } catch (err) { console.error(err) }
   finally { setDeletingDepartmentId(null) }
 }
@@ -199,7 +199,8 @@ const handleProjectSubmit = async () => {
   setDeletingSupervisorId(id)
   try {
     await API.delete(`/delete_supervisor.php?id=${id}`)
-    fetchSupervisors()
+    setSupervisors(prev => prev.filter(s => s.id !== id)) // remove immediately
+    fetchSupervisors() // sync in background
   } catch (err) { console.error(err) }
   finally { setDeletingSupervisorId(null) }
 }
