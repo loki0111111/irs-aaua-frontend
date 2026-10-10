@@ -227,10 +227,11 @@ function AdminDashboard() {
   const btnDanger = "text-red-700 border border-red-200 px-3 py-1 rounded-md text-[11px] font-medium uppercase hover:bg-red-50 transition-colors disabled:opacity-50"
   const btnEdit = "text-black border border-neutral-300 px-3 py-1 rounded-md text-[11px] font-medium uppercase hover:border-black transition-colors"
 
-  const yearOptions = Array.from({ length: 10 }, (_, i) => {
-    const start = 2025 - i
-    return `${start}/${start + 1}`
-  })
+  const currentYear = new Date().getFullYear()
+const yearOptions = Array.from({ length: 10 }, (_, i) => {
+  const start = currentYear - i
+  return `${start}/${start + 1}`
+})
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>

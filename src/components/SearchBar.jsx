@@ -70,8 +70,9 @@ function SearchBar({ onSearch, query, setQuery, departments }) {
   const [department, setDepartment] = useState('')
   const [year, setYear] = useState('')
 
+const currentYear = new Date().getFullYear()
 const years = Array.from({ length: 10 }, (_, i) => {
-  const start = 2025 - i
+  const start = currentYear - i
   return `${start}/${start + 1}`
 })
   const deptNames = departments.map((d) => (typeof d === 'string' ? d : d.name)).filter(Boolean)
