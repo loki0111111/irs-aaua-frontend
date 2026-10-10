@@ -3,15 +3,17 @@ import Navbar from '../components/Navbar'
 import SearchBar from '../components/SearchBar'
 import ProjectCard from '../components/ProjectCard'
 import API from '../services/api'
-import Footer from '../components/Footer'
 
 function SkeletonCard() {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5 animate-pulse">
-      <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-      <div className="h-3 bg-gray-200 rounded w-1/2 mb-4" />
-      <div className="h-3 bg-gray-200 rounded w-full mb-2" />
-      <div className="h-3 bg-gray-200 rounded w-5/6" />
+    <div className="bg-white border border-neutral-200 rounded-lg p-5 flex gap-4 animate-pulse">
+      <div className="w-9 shrink-0" />
+      <div className="flex-1">
+        <div className="h-4 bg-neutral-200 rounded w-3/4 mb-3" />
+        <div className="h-3 bg-neutral-200 rounded w-1/2 mb-3" />
+        <div className="h-3 bg-neutral-200 rounded w-full mb-2" />
+        <div className="h-3 bg-neutral-200 rounded w-5/6" />
+      </div>
     </div>
   )
 }
@@ -69,82 +71,83 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <SearchBar
-        onSearch={handleSearch}
-        query={query}
-        setQuery={setQuery}
-        departments={departments}
+    <div className="min-h-screen flex flex-col bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
       />
+      <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 py-10">
-        {loading && (
-          <div className="flex flex-col gap-4">
-            {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+      <main className={`flex-1 flex flex-col ${searched ? 'justify-start' : 'justify-center pb-20'}`}>
+        <section className={`w-full max-w-3xl mx-auto px-4 pb-2 text-center ${searched ? 'pt-10 sm:pt-12' : ''}`}>
+          <div
+            className="inline-flex items-center gap-3 text-neutral-500 text-[11px] sm:text-xs font-medium uppercase mb-5 sm:mb-6"
+            style={{ letterSpacing: '0.14em' }}
+          >
+            <span className="hidden sm:block w-6 h-px bg-neutral-300" />
+            Faculty of Computing &middot; Project Archive
+            <span className="hidden sm:block w-6 h-px bg-neutral-300" />
           </div>
-        )}
+          <h1
+            className="text-black text-3xl sm:text-5xl leading-tight mb-4"
+            style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: '-0.01em' }}
+          >
+            Every project this faculty{' '}<br className="hidden sm:block" />
+            has produced, <em className="italic font-medium">in one place.</em>
+          </h1>
+          <p className="text-neutral-600 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+            Search final year projects by title, keyword, supervisor, department, or year.
+          </p>
+        </section>
 
-        {!loading && searched && results.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-400 text-4xl mb-3">🔍</p>
-            <p className="text-gray-600 font-medium">No projects found</p>
-            <p className="text-gray-400 text-sm mt-1">Try a different keyword or filter</p>
-          </div>
-        )}
+        <SearchBar
+          onSearch={handleSearch}
+          query={query}
+          setQuery={setQuery}
+          departments={departments}
+        />
 
-        {!loading && !searched && (
-          <div>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="bg-white border border-gray-200 rounded-xl p-5 text-center shadow-sm">
-                <p className="text-3xl font-bold text-[#2E7D32]">500+</p>
-                <p className="text-gray-500 text-sm mt-1">Projects</p>
+        {searched && (
+          <div className="w-full max-w-3xl mx-auto px-4 py-10">
+            {loading && (
+              <div className="flex flex-col gap-3">
+                {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
               </div>
-              <div className="bg-white border border-gray-200 rounded-xl p-5 text-center shadow-sm">
-                <p className="text-3xl font-bold text-[#1a2e4a]">6</p>
-                <p className="text-gray-500 text-sm mt-1">Departments</p>
-              </div>
-            </div>
+            )}
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h2 className="text-[#1a2e4a] font-bold text-lg mb-5">How it works</h2>
-              <div className="flex flex-col gap-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold shrink-0">1</div>
-                  <div>
-                    <p className="text-gray-700 font-medium text-sm">Search</p>
-                    <p className="text-gray-400 text-xs mt-1">Enter a keyword, topic, supervisor, or department</p>
-                  </div>
+            {!loading && results.length === 0 && (
+              <div className="text-center py-20">
+                <div
+                  className="w-16 h-16 rounded-full border-2 border-neutral-200 mx-auto mb-5 flex items-center justify-center text-neutral-400 font-medium"
+                  style={{ fontSize: '11px' }}
+                >
+                  N/A
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#1a2e4a] text-white flex items-center justify-center font-bold shrink-0">2</div>
-                  <div>
-                    <p className="text-gray-700 font-medium text-sm">Browse</p>
-                    <p className="text-gray-400 text-xs mt-1">Review ranked results and find the most relevant projects</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold shrink-0">3</div>
-                  <div>
-                    <p className="text-gray-700 font-medium text-sm">Access</p>
-                    <p className="text-gray-400 text-xs mt-1">View the abstract or download the full project PDF</p>
-                  </div>
+                <p className="text-black font-semibold text-base" style={{ fontFamily: "'Fraunces', serif" }}>
+                  No matching records
+                </p>
+                <p className="text-neutral-600 text-sm mt-2">Try a different keyword or adjust your filters</p>
+              </div>
+            )}
+
+            {!loading && results.length > 0 && (
+              <div>
+                <p
+                  className="text-neutral-500 text-xs font-medium mb-4 uppercase"
+                  style={{ letterSpacing: '0.08em' }}
+                >
+                  {results.length} record{results.length !== 1 ? 's' : ''} found
+                </p>
+                <div className="flex flex-col gap-3">
+                  {results.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
-
-        {!loading && results.length > 0 && (
-          <div className="flex flex-col gap-4">
-            {results.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <Footer />
+      </main>
     </div>
   )
 }

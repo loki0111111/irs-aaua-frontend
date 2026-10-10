@@ -98,112 +98,110 @@ function AdminDashboard() {
   }
 
   const uploadToCloudinary = async (file) => {
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('upload_preset', 'irs_aaua_uploads')
-  formData.append('resource_type', 'raw')
-  // Remove resource_type: 'raw' — let Cloudinary handle it as auto
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'irs_aaua_uploads')
+    formData.append('resource_type', 'raw')
 
-  const res = await fetch('https://api.cloudinary.com/v1_1/dn83fy6fw/raw/upload', {
-    method: 'POST',
-    body: formData,
-  })
-  const data = await res.json()
-  return data.secure_url
-}
-
-const handleProjectSubmit = async () => {
-  if (!projectForm.title || !projectForm.authors || !projectForm.department_id || !projectForm.year) {
-    setFormError('Please fill in Title, Authors, Department and Year')
-    return
+    const res = await fetch('https://api.cloudinary.com/v1_1/dn83fy6fw/raw/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const data = await res.json()
+    return data.secure_url
   }
-  setFormError('')
-  setUploading(true)
 
-  const formData = new FormData()
-  formData.append('title', projectForm.title)
-  formData.append('authors', projectForm.authors)
-  formData.append('abstract', projectForm.abstract)
-  formData.append('department_id', projectForm.department_id)
-  formData.append('supervisor_id', projectForm.supervisor_id)
-  formData.append('year', projectForm.year)
-
-  if (file) {
-    try {
-      const pdfUrl = await uploadToCloudinary(file)
-      formData.append('pdf_url', pdfUrl)
-    } catch (err) {
-      setFormError('PDF upload failed. Try again.')
-      setUploading(false)
+  const handleProjectSubmit = async () => {
+    if (!projectForm.title || !projectForm.authors || !projectForm.department_id || !projectForm.year) {
+      setFormError('Please fill in Title, Authors, Department and Year')
       return
     }
-  }
+    setFormError('')
+    setUploading(true)
 
-  try {
-    if (editProject) {
-      formData.append('id', editProject.id)
-      await API.post('/update.php', formData)
-    } else {
-      await API.post('/upload.php', formData)
+    const formData = new FormData()
+    formData.append('title', projectForm.title)
+    formData.append('authors', projectForm.authors)
+    formData.append('abstract', projectForm.abstract)
+    formData.append('department_id', projectForm.department_id)
+    formData.append('supervisor_id', projectForm.supervisor_id)
+    formData.append('year', projectForm.year)
+
+    if (file) {
+      try {
+        const pdfUrl = await uploadToCloudinary(file)
+        formData.append('pdf_url', pdfUrl)
+      } catch (err) {
+        setFormError('PDF upload failed. Try again.')
+        setUploading(false)
+        return
+      }
     }
-    resetProjectForm()
-    fetchProjects()
-  } catch (err) {
-    setFormError('Upload failed. Please try again.')
-  } finally {
-    setUploading(false)
-  }
-}
 
+    try {
+      if (editProject) {
+        formData.append('id', editProject.id)
+        await API.post('/update.php', formData)
+      } else {
+        await API.post('/upload.php', formData)
+      }
+      resetProjectForm()
+      fetchProjects()
+    } catch (err) {
+      setFormError('Upload failed. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   // Department handlers
   const handleAddDepartment = async () => {
-  if (!newDepartment.trim() || addingDepartment) return
-  setAddingDepartment(true)
-  try {
-    await API.post('/add_department.php', { name: newDepartment.trim() })
-    setNewDepartment('')
-    fetchDepartments()
-  } catch (err) { console.error(err) }
-  finally { setAddingDepartment(false) }
-}
+    if (!newDepartment.trim() || addingDepartment) return
+    setAddingDepartment(true)
+    try {
+      await API.post('/add_department.php', { name: newDepartment.trim() })
+      setNewDepartment('')
+      fetchDepartments()
+    } catch (err) { console.error(err) }
+    finally { setAddingDepartment(false) }
+  }
 
   const handleDeleteDepartment = async (id) => {
-  if (!confirm('Delete this department?')) return
-  setDeletingDepartmentId(id)
-  try {
-    await API.delete(`/delete_department.php?id=${id}`)
-    setDepartments(prev => prev.filter(d => d.id !== id)) // remove immediately
-    fetchDepartments() // sync in background
-  } catch (err) { console.error(err) }
-  finally { setDeletingDepartmentId(null) }
-}
+    if (!confirm('Delete this department?')) return
+    setDeletingDepartmentId(id)
+    try {
+      await API.delete(`/delete_department.php?id=${id}`)
+      setDepartments(prev => prev.filter(d => d.id !== id))
+      fetchDepartments()
+    } catch (err) { console.error(err) }
+    finally { setDeletingDepartmentId(null) }
+  }
 
   // Supervisor handlers
   const handleAddSupervisor = async () => {
-  if (!supervisorForm.name.trim() || addingSupervisor) return
-  setAddingSupervisor(true)
-  try {
-    await API.post('/add_supervisor.php', { name: supervisorForm.name })
-    setSupervisorForm({ name: '' })
-    fetchSupervisors()
-  } catch (err) {
-    console.error('add supervisor error:', err.response?.data || err.message)
-  } finally {
-    setAddingSupervisor(false)
+    if (!supervisorForm.name.trim() || addingSupervisor) return
+    setAddingSupervisor(true)
+    try {
+      await API.post('/add_supervisor.php', { name: supervisorForm.name })
+      setSupervisorForm({ name: '' })
+      fetchSupervisors()
+    } catch (err) {
+      console.error('add supervisor error:', err.response?.data || err.message)
+    } finally {
+      setAddingSupervisor(false)
+    }
   }
-}
 
   const handleDeleteSupervisor = async (id) => {
-  if (!confirm('Delete this supervisor?')) return
-  setDeletingSupervisorId(id)
-  try {
-    await API.delete(`/delete_supervisor.php?id=${id}`)
-    setSupervisors(prev => prev.filter(s => s.id !== id)) // remove immediately
-    fetchSupervisors() // sync in background
-  } catch (err) { console.error(err) }
-  finally { setDeletingSupervisorId(null) }
-}
+    if (!confirm('Delete this supervisor?')) return
+    setDeletingSupervisorId(id)
+    try {
+      await API.delete(`/delete_supervisor.php?id=${id}`)
+      setSupervisors(prev => prev.filter(s => s.id !== id))
+      fetchSupervisors()
+    } catch (err) { console.error(err) }
+    finally { setDeletingSupervisorId(null) }
+  }
 
   // Filtered projects
   const filteredProjects = projects.filter(p => {
@@ -213,45 +211,61 @@ const handleProjectSubmit = async () => {
     return true
   })
 
-  // Supervisors filtered by selected department in project form
   const filteredSupervisors = projectForm.department_id
     ? supervisors.filter(s => String(s.department_id) === String(projectForm.department_id))
     : supervisors
 
-  const inputClass = "border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-[#1B5E20] w-full"
-  const btnPrimary = "bg-[#1B5E20] text-white text-sm px-4 py-2 rounded-md hover:bg-green-800 transition"
-  const btnSecondary = "border border-gray-300 text-gray-600 text-sm px-4 py-2 rounded-md hover:bg-gray-50 transition"
-  const btnDanger = "text-red-500 border border-red-400 px-3 py-1 rounded text-xs hover:bg-red-50 transition"
-  const btnEdit = "text-[#1B5E20] border border-[#1B5E20] px-3 py-1 rounded text-xs hover:bg-green-50 transition"
+  const serif = { fontFamily: "'Fraunces', serif" }
+
+  const inputClass = "border border-neutral-200 rounded-md px-3 py-2 text-sm outline-none focus:border-black transition-colors w-full bg-white text-black"
+  const btnPrimary = "bg-black text-white text-xs font-medium uppercase px-4 py-2.5 rounded-md hover:bg-neutral-800 transition-colors disabled:opacity-50"
+  const btnSecondary = "border border-neutral-300 text-neutral-600 text-xs font-medium uppercase px-4 py-2.5 rounded-md hover:bg-neutral-100 transition-colors"
+  const btnDanger = "text-red-700 border border-red-200 px-3 py-1 rounded-md text-[11px] font-medium uppercase hover:bg-red-50 transition-colors disabled:opacity-50"
+  const btnEdit = "text-black border border-neutral-300 px-3 py-1 rounded-md text-[11px] font-medium uppercase hover:border-black transition-colors"
+
+  const yearOptions = Array.from({ length: 10 }, (_, i) => {
+    const start = 2025 - i
+    return `${start}/${start + 1}`
+  })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+
       {/* Header */}
-      <div className="bg-[#1B5E20] text-white px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-b shadow-sm border-neutral-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/aaua-logo.jpg" alt="AAUA" className="h-9 w-9 object-contain" />
+          <img src="/aaua-logo.jpg" alt="AAUA" className="h-10 w-10 object-contain grayscale" />
           <div>
-            <p className="font-bold text-sm">AAUA Faculty of Computing</p>
-            <p className="text-[#F9A825] text-xs">Admin Dashboard</p>
+            <p className="font-semibold text-black text-base leading-tight" style={serif}>AAUA Faculty of Computing</p>
+            <p className="text-neutral-500 text-xs leading-tight">Admin Dashboard</p>
           </div>
         </div>
-        <button onClick={handleLogout} className="text-sm border border-white/40 px-4 py-1.5 rounded-md hover:bg-white/10 transition">
+        <button
+          onClick={handleLogout}
+          className="text-xs font-medium uppercase border border-neutral-300 text-black px-4 py-1.5 rounded-md hover:bg-neutral-100 transition-colors"
+          style={{ letterSpacing: '0.06em' }}
+        >
           Logout
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 bg-white px-6">
+      <div className="border-b border-neutral-200 bg-white px-6">
         <div className="flex gap-6">
           {['projects', 'supervisors', 'departments'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-3 text-sm font-medium border-b-2 transition capitalize ${
+              className={`py-3 text-xs font-medium uppercase border-b-2 transition-colors ${
                 activeTab === tab
-                  ? 'border-[#1B5E20] text-[#1B5E20]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-black text-black'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-600'
               }`}
+              style={{ letterSpacing: '0.06em' }}
             >
               {tab}
             </button>
@@ -265,45 +279,45 @@ const handleProjectSubmit = async () => {
         {activeTab === 'projects' && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-gray-800 font-semibold text-lg">All Projects</h1>
+              <h1 className="text-black font-semibold text-lg" style={serif}>All Projects</h1>
               <button onClick={() => { resetProjectForm(); setShowProjectForm(true) }} className={btnPrimary}>
                 + Upload Project
               </button>
             </div>
 
-            {/* Filters */}
             {!showProjectForm && (
-            <div className="flex gap-3 mb-5 flex-wrap">
-              <select className="border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-[#1B5E20]"
-                value={projectFilter.department_id}
-                onChange={e => setProjectFilter(prev => ({ ...prev, department_id: e.target.value }))}>
-                <option value="">All Departments</option>
-                {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select>
-              <select className="border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-[#1B5E20]"
-                value={projectFilter.supervisor_id}
-                onChange={e => setProjectFilter(prev => ({ ...prev, supervisor_id: e.target.value }))}>
-                <option value="">All Supervisors</option>
-                {supervisors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-              <select className="border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-[#1B5E20]"
-                value={projectFilter.year}
-                onChange={e => setProjectFilter(prev => ({ ...prev, year: e.target.value }))}>
-                <option value="">All Years</option>
-                {Array.from({ length: 10 }, (_, i) => {
-                    const start = 2025 - i
-                    return `${start}/${start + 1}`
-                }).map(y => (
-                    <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
+              <div className="flex gap-3 mb-5 flex-wrap">
+                <select
+                  className={`${inputClass} w-auto`}
+                  value={projectFilter.department_id}
+                  onChange={e => setProjectFilter(prev => ({ ...prev, department_id: e.target.value }))}
+                >
+                  <option value="">All Departments</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+                <select
+                  className={`${inputClass} w-auto`}
+                  value={projectFilter.supervisor_id}
+                  onChange={e => setProjectFilter(prev => ({ ...prev, supervisor_id: e.target.value }))}
+                >
+                  <option value="">All Supervisors</option>
+                  {supervisors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+                <select
+                  className={`${inputClass} w-auto`}
+                  value={projectFilter.year}
+                  onChange={e => setProjectFilter(prev => ({ ...prev, year: e.target.value }))}
+                >
+                  <option value="">All Years</option>
+                  {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
             )}
 
             {/* Project Form */}
             {showProjectForm && (
-              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-                <h2 className="font-semibold text-gray-800 mb-4">
+              <div className="bg-white border border-neutral-200 rounded-lg shadow-sm p-6 mb-6">
+                <h2 className="font-semibold text-black mb-4" style={serif}>
                   {editProject ? 'Edit Project' : 'Upload New Project'}
                 </h2>
                 <div className="grid grid-cols-2 gap-3 mb-3">
@@ -326,34 +340,29 @@ const handleProjectSubmit = async () => {
                     {supervisors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                   <select value={projectForm.year}
-                      onChange={e => setProjectForm({ ...projectForm, year: e.target.value })}
-                      className={inputClass}>
-                      <option value="">Select Session Year</option>
-                      {Array.from({ length: 10 }, (_, i) => {
-                          const start = 2025 - i
-                          return `${start}/${start + 1}`
-                      }).map(y => (
-                          <option key={y} value={y}>{y}</option>
-                      ))}
+                    onChange={e => setProjectForm({ ...projectForm, year: e.target.value })}
+                    className={inputClass}>
+                    <option value="">Select Session Year</option>
+                    {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
                   <textarea placeholder="Abstract" value={projectForm.abstract}
                     onChange={e => setProjectForm({ ...projectForm, abstract: e.target.value })}
                     rows={4} className={`col-span-2 resize-none ${inputClass}`} />
                   <div className="col-span-2">
-                    <label className="flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-md px-4 py-3 cursor-pointer hover:border-[#1B5E20] transition">
-                      <span className="text-[#1B5E20] text-sm font-medium">📄 Upload PDF</span>
-                      <span className="text-gray-400 text-sm">{file ? file.name : 'Click to choose a PDF file'}</span>
+                    <label className="flex items-center gap-3 border-2 border-dashed border-neutral-300 rounded-md px-4 py-3 cursor-pointer hover:border-black transition-colors">
+                      <span className="text-black text-sm font-medium">Upload PDF</span>
+                      <span className="text-neutral-400 text-sm">{file ? file.name : 'Click to choose a PDF file'}</span>
                       <input type="file" accept=".pdf" onChange={e => setFile(e.target.files[0])} className="hidden" />
                     </label>
                   </div>
                 </div>
                 {formError && (
-                  <p className="text-red-500 text-xs mb-3">{formError}</p>
+                  <p className="text-red-700 text-xs mb-3">{formError}</p>
                 )}
                 <div className="flex gap-3">
                   <button onClick={handleProjectSubmit} className={btnPrimary} disabled={uploading}>
-                      {uploading ? (file ? 'Uploading PDF...' : 'Saving...') : (editProject ? 'Update' : 'Upload')}
-                    </button>
+                    {uploading ? (file ? 'Uploading PDF...' : 'Saving...') : (editProject ? 'Update' : 'Upload')}
+                  </button>
                   <button onClick={resetProjectForm} className={btnSecondary}>Cancel</button>
                 </div>
               </div>
@@ -361,28 +370,32 @@ const handleProjectSubmit = async () => {
 
             {/* Projects Table */}
             {projectsLoading ? (
-              <p className="text-center text-gray-500 text-sm">Loading...</p>
+              <p className="text-center text-neutral-400 text-sm">Loading...</p>
             ) : filteredProjects.length === 0 ? (
-              <p className="text-center text-gray-400 text-sm py-10">No projects found.</p>
+              <p className="text-center text-neutral-400 text-sm py-10">No projects found.</p>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
-                    <table className="w-full text-sm min-w-[600px]">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+              <div className="bg-white border border-neutral-200 rounded-lg shadow-sm overflow-x-auto">
+                <table className="w-full text-sm min-w-[600px]">
+                  <thead className="bg-neutral-50 border-b border-neutral-200">
                     <tr>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Title</th>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Authors</th>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Department</th>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Year</th>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Actions</th>
+                      {['Title', 'Authors', 'Department', 'Year', 'Actions'].map(h => (
+                        <th
+                          key={h}
+                          className="text-left px-4 py-3 text-neutral-500 font-medium text-[11px] uppercase"
+                          style={{ letterSpacing: '0.08em' }}
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {filteredProjects.map((p, i) => (
-                      <tr key={p.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="px-4 py-3 text-gray-800 max-w-xs truncate">{p.title}</td>
-                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{p.authors}</td>
-                        <td className="px-4 py-3 text-gray-600">{p.department}</td>
-                        <td className="px-4 py-3 text-gray-600">{p.year}</td>
+                      <tr key={p.id} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
+                        <td className="px-4 py-3 text-black max-w-xs truncate">{p.title}</td>
+                        <td className="px-4 py-3 text-neutral-600 max-w-xs truncate">{p.authors}</td>
+                        <td className="px-4 py-3 text-neutral-600">{p.department}</td>
+                        <td className="px-4 py-3 text-neutral-600">{p.year}</td>
                         <td className="px-4 py-3 flex gap-2">
                           <button onClick={() => handleProjectEdit(p)} className={btnEdit}>Edit</button>
                           <button onClick={() => handleProjectDelete(p.id)} className={btnDanger}>Delete</button>
@@ -399,11 +412,15 @@ const handleProjectSubmit = async () => {
         {/* DEPARTMENTS TAB */}
         {activeTab === 'departments' && (
           <div>
-            <h1 className="text-gray-800 font-semibold text-lg mb-6">Departments</h1>
+            <h1 className="text-black font-semibold text-lg mb-6" style={serif}>Departments</h1>
 
-            {/* Add Department */}
-            <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Add Department</h2>
+            <div className="bg-white border border-neutral-200 rounded-lg shadow-sm p-5 mb-6">
+              <h2
+                className="text-[11px] uppercase font-semibold text-neutral-500 mb-3"
+                style={{ letterSpacing: '0.08em' }}
+              >
+                Add Department
+              </h2>
               <div className="flex gap-3">
                 <input placeholder="Department name" value={newDepartment}
                   onChange={e => setNewDepartment(e.target.value)}
@@ -415,26 +432,32 @@ const handleProjectSubmit = async () => {
               </div>
             </div>
 
-            {/* Departments List */}
             {departments.length === 0 ? (
-              <p className="text-center text-gray-400 text-sm py-10">No departments added yet.</p>
+              <p className="text-center text-neutral-400 text-sm py-10">No departments added yet.</p>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-white border border-neutral-200 rounded-lg shadow-sm overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-neutral-50 border-b border-neutral-200">
                     <tr>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Department</th>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Actions</th>
+                      {['Department', 'Actions'].map(h => (
+                        <th
+                          key={h}
+                          className="text-left px-4 py-3 text-neutral-500 font-medium text-[11px] uppercase"
+                          style={{ letterSpacing: '0.08em' }}
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {departments.map((d, i) => (
-                      <tr key={d.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="px-4 py-3 text-gray-800">{d.name}</td>
+                      <tr key={d.id} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
+                        <td className="px-4 py-3 text-black">{d.name}</td>
                         <td className="px-4 py-3">
                           <button onClick={() => handleDeleteDepartment(d.id)} className={btnDanger} disabled={deletingDepartmentId === d.id}>
-                             {deletingDepartmentId === d.id ? 'Deleting...' : 'Delete'}
-                           </button>
+                            {deletingDepartmentId === d.id ? 'Deleting...' : 'Delete'}
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -448,11 +471,15 @@ const handleProjectSubmit = async () => {
         {/* SUPERVISORS TAB */}
         {activeTab === 'supervisors' && (
           <div>
-            <h1 className="text-gray-800 font-semibold text-lg mb-6">Supervisors</h1>
+            <h1 className="text-black font-semibold text-lg mb-6" style={serif}>Supervisors</h1>
 
-            {/* Add Supervisor */}
-            <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Add Supervisor</h2>
+            <div className="bg-white border border-neutral-200 rounded-lg shadow-sm p-5 mb-6">
+              <h2
+                className="text-[11px] uppercase font-semibold text-neutral-500 mb-3"
+                style={{ letterSpacing: '0.08em' }}
+              >
+                Add Supervisor
+              </h2>
               <div className="flex gap-3">
                 <input placeholder="Supervisor name" value={supervisorForm.name}
                   onChange={e => setSupervisorForm({ name: e.target.value })}
@@ -463,22 +490,28 @@ const handleProjectSubmit = async () => {
               </div>
             </div>
 
-            {/* Supervisors List */}
             {supervisors.length === 0 ? (
-              <p className="text-center text-gray-400 text-sm py-10">No supervisors added yet.</p>
+              <p className="text-center text-neutral-400 text-sm py-10">No supervisors added yet.</p>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-white border border-neutral-200 rounded-lg shadow-sm overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-neutral-50 border-b border-neutral-200">
                     <tr>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Name</th>
-                      <th className="text-left px-4 py-3 text-gray-600 font-medium">Actions</th>
+                      {['Name', 'Actions'].map(h => (
+                        <th
+                          key={h}
+                          className="text-left px-4 py-3 text-neutral-500 font-medium text-[11px] uppercase"
+                          style={{ letterSpacing: '0.08em' }}
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {supervisors.map((s, i) => (
-                      <tr key={s.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="px-4 py-3 text-gray-800">{s.name}</td>
+                      <tr key={s.id} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
+                        <td className="px-4 py-3 text-black">{s.name}</td>
                         <td className="px-4 py-3">
                           <button onClick={() => handleDeleteSupervisor(s.id)} className={btnDanger} disabled={deletingSupervisorId === s.id}>
                             {deletingSupervisorId === s.id ? 'Deleting...' : 'Delete'}

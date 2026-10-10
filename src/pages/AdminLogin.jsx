@@ -30,45 +30,85 @@ function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative"
-  style={{ backgroundImage: 'url(/faculty.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-  <div className="absolute inset-0 opacity-85" style={{ background: 'linear-gradient(135deg, #1a2e4a 0%, #2E7D32 100%)' }} />
-      <div className="relative z-10 rounded-2xl p-8 w-full max-w-sm" style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-        <div className="text-center mb-6">
-          <img src="/aaua-logo.jpg" alt="AAUA Logo" className="h-14 w-14 mx-auto mb-3 object-contain" />
-          <p className="font-bold text-white text-lg">AAUA</p>
-          <p className="text-[#4CAF50] text-xs font-semibold tracking-wide">Faculty of Computing</p>
-          <p className="text-white/70 text-sm mt-2">Admin Login</p>
+    <div
+      className="min-h-screen flex items-center justify-center bg-white px-4"
+      style={{ fontFamily: "'Inter', sans-serif" }}
+    >
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+
+      <div className="w-full max-w-sm">
+        <div className="bg-white border border-neutral-200 rounded-lg shadow-sm">
+          <div className="px-8 pt-9 pb-2 text-center">
+            <img src="/aaua-logo.jpg" alt="AAUA Logo" className="h-12 w-12 mx-auto mb-4 object-contain grayscale" />
+            <p className="text-black text-lg font-semibold" style={{ fontFamily: "'Fraunces', serif" }}>
+              AAUA
+            </p>
+            <p className="text-neutral-500 text-xs mt-0.5">Faculty of Computing</p>
+            <div
+              className="inline-flex items-center gap-2 text-neutral-500 text-[10px] font-medium uppercase mt-4"
+              style={{ letterSpacing: '0.12em' }}
+            >
+              <span className="w-4 h-px bg-neutral-300" />
+              Administrator Access
+              <span className="w-4 h-px bg-neutral-300" />
+            </div>
+          </div>
+
+          <div className="px-8 pb-8 pt-5">
+            {error && (
+              <p className="text-red-700 text-xs text-center mb-4 bg-red-50 border border-red-200 rounded-md py-2">
+                {error}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <div>
+                <label
+                  className="text-neutral-500 text-[10px] font-medium uppercase block mb-1"
+                  style={{ letterSpacing: '0.1em' }}
+                >
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full border border-neutral-200 rounded-md px-3 py-2.5 text-sm outline-none text-black focus:border-black transition-colors"
+                />
+              </div>
+              <div>
+                <label
+                  className="text-neutral-500 text-[10px] font-medium uppercase block mb-1"
+                  style={{ letterSpacing: '0.1em' }}
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  className="w-full border border-neutral-200 rounded-md px-3 py-2.5 text-sm outline-none text-black focus:border-black transition-colors"
+                />
+              </div>
+              <button
+                onClick={handleLogin}
+                disabled={loading}
+                className="bg-black text-white text-xs font-medium uppercase py-3 rounded-md mt-2 hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                style={{ letterSpacing: '0.08em' }}
+              >
+                {loading ? 'Logging in…' : 'Log In'}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {error && (
-          <p className="text-red-500 text-xs text-center mb-4">{error}</p>
-        )}
-
-        <div className="flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="border border-white/30 rounded-md px-4 py-2 text-sm outline-none bg-white/10 text-white placeholder-white/60 focus:border-white/60"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            className="border border-white/30 rounded-md px-4 py-2 text-sm outline-none bg-white/10 text-white placeholder-white/60 focus:border-white/60"
-          />
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="bg-[#1B5E20] text-white text-sm py-2 rounded-md hover:bg-green-800 transition disabled:opacity-50"
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </div>
+        <p className="text-center text-neutral-400 text-[11px] mt-6">
+          Restricted to authorised faculty administrators
+        </p>
       </div>
     </div>
   )

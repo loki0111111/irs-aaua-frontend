@@ -1,24 +1,45 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 function ProjectCard({ project }) {
-  const navigate = useNavigate()
+  const {
+    id,
+    title,
+    authors,
+    department,
+    supervisor,
+    year,
+    abstract,
+  } = project
 
   return (
-    <div
-      onClick={() => navigate(`/project/${project.id}`)}
-      className="bg-white border border-gray-200 rounded-lg p-5 cursor-pointer hover:shadow-md hover:border-[#1B5E20] transition"
+    <Link
+      to={`/project/${id}`}
+      className="block bg-white border border-neutral-200 rounded-lg px-5 py-4 shadow-sm hover:border-black transition-colors"
     >
-      <h2 className="text-[#1B5E20] font-semibold text-base mb-1 line-clamp-2">
-        {project.title}
-      </h2>
-      <p className="text-xs text-gray-500 mb-3">
-        {project.authors} &middot; {project.supervisor} &middot; {project.department} &middot; {project.year}
-      </p>
-      <p className="text-sm text-gray-600 line-clamp-3">
-        {project.abstract}
-      </p>
-      <p className="text-xs text-[#F9A825] font-medium mt-3">View details →</p>
-    </div>
+      <div className="flex items-start justify-between gap-4 mb-1.5">
+        <h3
+          className="text-black text-[16px] font-semibold leading-snug"
+          style={{ fontFamily: "'Fraunces', serif" }}
+        >
+          {title}
+        </h3>
+        <span className="shrink-0 text-neutral-500 text-xs font-medium">
+          {year}
+        </span>
+      </div>
+
+      <div className="text-neutral-500 text-xs mb-2">
+        {department}
+        {supervisor && <> &middot; {supervisor}</>}
+        {authors && <> &middot; {authors}</>}
+      </div>
+
+      {abstract && (
+        <p className="text-neutral-600 text-[13.5px] leading-relaxed line-clamp-2">
+          {abstract}
+        </p>
+      )}
+    </Link>
   )
 }
 

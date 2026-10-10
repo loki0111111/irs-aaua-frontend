@@ -1,84 +1,148 @@
-import { useState } from 'react'
-import CustomSelect from './CustomSelect'
+import { useState, useRef, useEffect } from 'react'
 
-function SearchBar({ onSearch, query, setQuery, departments = [] }) {
-  const [selectedDept, setSelectedDept] = useState('')
-  const [selectedYear, setSelectedYear] = useState('')
+function Chevron() {
+  return (
+    <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+      <path d="M1 1L5 5L9 1" stroke="#000000" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
-  const handleSearch = () => {
-    onSearch({ q: query })
-  }
+function FieldDropdown({ label, value, options, onChange, borderRight = true }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
 
-  const handleDeptChange = (val) => {
-    setSelectedDept(val)
-    onSearch({ q: query, department: val })
-  }
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
-  const handleYearChange = (val) => {
-    setSelectedYear(val)
-    onSearch({ q: query, year: val })
+  const handleSelect = (e, val) => {
+    e.stopPropagation()
+    onChange(val)
+    setOpen(false)
   }
 
   return (
     <div
-      className="relative py-16 md:py-28 px-6"
-      style={{ backgroundImage: 'url(/faculty.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      ref={ref}
+      className={`relative flex-1 min-w-0 px-4 sm:px-6 py-3.5 cursor-pointer ${borderRight ? 'border-r border-neutral-200' : ''}`}
+      onClick={() => setOpen((o) => !o)}
     >
-      <div className="absolute inset-0 opacity-85"
-        style={{ background: 'linear-gradient(135deg, #1a2e4a 0%, #2E7D32 100%)' }}
-      />
+      <div
+        className="text-neutral-500 text-[10px] uppercase font-medium"
+        style={{ letterSpacing: '0.1em' }}
+      >
+        {label}
+      </div>
+      <div className="flex items-center justify-between gap-2 mt-0.5">
+        <span className="text-black text-sm font-medium truncate">{value || `All ${label.toLowerCase()}`}</span>
+        <Chevron />
+      </div>
 
-      <div className="relative max-w-3xl mx-auto text-center">
-        <h1 className="text-white text-4xl font-bold mb-3 leading-tight">
-          Project Repository
-        </h1>
-        <p className="text-white text-base mb-10">
-          Search and access past final year projects from the Faculty of Computing, AAUA
-        </p>
+      {open && (
+        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg z-10 max-h-56 overflow-y-auto">
+          <div
+            className="px-4 py-2.5 text-sm text-neutral-500 hover:bg-neutral-100 cursor-pointer"
+            onClick={(e) => handleSelect(e, '')}
+          >
+            All {label.toLowerCase()}
+          </div>
+          {options.map((opt) => (
+            <div
+              key={opt}
+              className="px-4 py-2.5 text-sm text-black hover:bg-neutral-100 cursor-pointer"
+              onClick={(e) => handleSelect(e, opt)}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
-        <div className="flex gap-2 mb-4">
+function SearchBar({ onSearch, query, setQuery, departments }) {
+  const [department, setDepartment] = useState('')
+  const [year, setYear] = useState('')
+
+const years = Array.from({ length: 10 }, (_, i) => {
+  const start = 2025 - i
+  return `${start}/${start + 1}`
+})
+  const deptNames = departments.map((d) => (typeof d === 'string' ? d : d.name)).filter(Boolean)
+
+  const handleInputChange = (e) => {
+    setQuery(e.target.value)
+    onSearch({ q: e.target.value })
+  }
+
+  const handleDeptChange = (val) => {
+    setDepartment(val)
+    onSearch({ department: val })
+  }
+
+  const handleYearChange = (val) => {
+    setYear(val)
+    onSearch({ year: val })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSearch({ q: query })
+  }
+
+  return (
+    <section className="w-full max-w-3xl mx-auto px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white border border-neutral-200 rounded-lg relative shadow-sm"
+      >
+        <div
+          className="text-neutral-500 text-[10px] uppercase font-medium px-4 sm:px-6 pt-3.5"
+          style={{ letterSpacing: '0.1em' }}
+        >
+          Search Request
+        </div>
+
+        <div className="flex items-stretch px-4 sm:px-6 pb-4 pt-1.5 gap-3">
           <input
-            type="text"
-            placeholder="Search by keyword, title, or topic..."
+            className="flex-1 min-w-0 outline-none text-black text-lg bg-transparent placeholder:text-neutral-400"
+            style={{ fontFamily: "'Fraunces', serif" }}
+            placeholder={`e.g. "online voting system" or a supervisor's name…`}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="flex-1 px-4 py-3 rounded-lg text-white placeholder-white/70 text-sm outline-none bg-white/20 backdrop-blur-sm border border-white/30 shadow-md"
+            onChange={handleInputChange}
           />
           <button
-            onClick={handleSearch}
-            className="bg-white text-[#2E7D32] font-semibold px-6 py-3 rounded-lg text-sm transition shadow-md hover:bg-white/90"
+            type="submit"
+            className="bg-black text-white px-4 sm:px-6 py-2 rounded-md text-xs uppercase font-medium shrink-0 hover:bg-neutral-800 transition"
+            style={{ letterSpacing: '0.08em' }}
           >
-            Search
+            Search &rarr;
           </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 justify-center relative">
-          <CustomSelect
-            placeholder="All Departments"
-            value={selectedDept}
+        <div className="flex border-t border-neutral-200">
+          <FieldDropdown
+            label="Department"
+            value={department}
+            options={deptNames}
             onChange={handleDeptChange}
-            options={[
-              { value: '', label: 'All Departments' },
-              ...departments.map(d => ({ value: d.name, label: d.name }))
-            ]}
           />
-          <CustomSelect
-            placeholder="All Years"
-            value={selectedYear}
+          <FieldDropdown
+            label="Year"
+            value={year}
+            options={years}
             onChange={handleYearChange}
-            options={[
-              { value: '', label: 'All Years' },
-              ...Array.from({ length: 10 }, (_, i) => {
-                const start = 2025 - i
-                const y = `${start}/${start + 1}`
-                return { value: y, label: y }
-              })
-            ]}
+            borderRight={false}
           />
         </div>
-      </div>
-    </div>
+      </form>
+    </section>
   )
 }
 

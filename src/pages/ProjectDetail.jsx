@@ -23,75 +23,95 @@ function ProjectDetail() {
     fetchProject()
   }, [id])
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50">
+  const serif = { fontFamily: "'Fraunces', serif" }
+
+  const Shell = ({ children }) => (
+    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
       <Navbar />
-      <p className="text-center text-gray-500 text-sm mt-20">Loading...</p>
+      {children}
     </div>
+  )
+
+  if (loading) return (
+    <Shell>
+      <p className="text-center text-neutral-400 text-sm mt-20">Loading…</p>
+    </Shell>
   )
 
   if (!project) return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <p className="text-center text-gray-500 text-sm mt-20">Project not found.</p>
-    </div>
+    <Shell>
+      <p className="text-center text-neutral-400 text-sm mt-20">Project not found.</p>
+    </Shell>
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-3xl mx-auto px-4 py-8">
+    <Shell>
+      <div className="max-w-2xl mx-auto px-4 py-10">
         <button
           onClick={() => navigate(-1)}
-          className="text-sm text-[#1B5E20] mb-6 inline-block hover:underline"
+          className="text-xs uppercase font-medium text-neutral-500 mb-6 inline-flex items-center gap-2 hover:text-black transition-colors"
+          style={{ letterSpacing: '0.06em' }}
         >
-          Back to results
+          &larr; Back to results
         </button>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h1 className="text-[#1B5E20] text-xl font-bold mb-3">
-            {project.title}
-          </h1>
-
-          <div className="grid grid-cols-2 gap-3 mb-5 text-sm text-gray-600">
-            <div>
-              <span className="font-medium text-gray-800">Author:</span> {project.authors}
-            </div>
-            <div>
-              <span className="font-medium text-gray-800">Supervisor:</span> {project.supervisor}
-            </div>
-            <div>
-              <span className="font-medium text-gray-800">Department:</span> {project.department}
-            </div>
-            <div>
-              <span className="font-medium text-gray-800">Year:</span> {project.year}
-            </div>
+        <div className="bg-white border border-neutral-200 rounded-lg shadow-sm px-6 py-6">
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <h1 className="text-black text-xl font-semibold leading-snug" style={serif}>
+              {project.title}
+            </h1>
+            <span className="shrink-0 text-neutral-500 text-sm font-medium">
+              {project.year}
+            </span>
           </div>
 
-          <h2 className="text-gray-800 font-semibold mb-2">Abstract</h2>
-          <p className="text-sm text-gray-600 leading-relaxed mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-6 pb-6 border-b border-neutral-200">
+            {[
+              { label: 'Author(s)', value: project.authors },
+              { label: 'Supervisor', value: project.supervisor },
+              { label: 'Department', value: project.department },
+            ].map((f) => (
+              <div key={f.label}>
+                <div className="text-neutral-500 text-[10px] uppercase font-medium mb-0.5" style={{ letterSpacing: '0.08em' }}>
+                  {f.label}
+                </div>
+                <div className="text-black text-sm">{f.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-neutral-500 text-[10px] uppercase font-medium mb-2" style={{ letterSpacing: '0.08em' }}>
+            Abstract
+          </div>
+          <p className="text-sm text-neutral-700 leading-relaxed mb-7">
             {project.abstract}
           </p>
 
           {project.pdf_path && (
-             <div className="flex gap-3">
-               <button
-                  onClick={() => window.open(project.pdf_path, '_blank')}
-                  className="bg-[#1B5E20] text-white text-sm px-5 py-2 rounded-md hover:bg-green-800 transition"
-                >
-                  View PDF
-                </button>               
-                <a
-                    href={`${import.meta.env.VITE_API_URL}/download.php?url=${encodeURIComponent(project.pdf_path)}`}
-                      className="border border-[#1B5E20] text-[#1B5E20] text-sm px-5 py-2 rounded-md hover:bg-green-50 transition"
-                    >
-                      Download
-                </a>
-             </div>
-           )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.open(project.pdf_path, '_blank')}
+                className="bg-black text-white text-xs uppercase font-medium px-5 py-2.5 rounded-md hover:bg-neutral-800 transition-colors"
+                style={{ letterSpacing: '0.08em' }}
+              >
+                View PDF
+              </button>
+              <a
+                href={`${import.meta.env.VITE_API_URL}/download.php?url=${encodeURIComponent(project.pdf_path)}&name=${encodeURIComponent(`${project.title} (${project.year.replace('/', '-')})`)}`}
+                className="border border-neutral-300 text-black text-xs uppercase font-medium px-5 py-2.5 rounded-md hover:border-black transition-colors"
+                style={{ letterSpacing: '0.08em' }}
+              >
+                Download
+              </a>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </Shell>
   )
 }
 
