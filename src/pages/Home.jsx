@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import Navbar from '../components/Navbar'
 import SearchBar from '../components/SearchBar'
 import ProjectCard from '../components/ProjectCard'
 import API from '../services/api'
@@ -71,12 +70,11 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="flex-1 flex flex-col bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
       <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet"
       />
-      <Navbar />
 
       <main className={`flex-1 flex flex-col ${searched ? 'justify-start' : 'justify-center pb-20'}`}>
         <section className={`w-full max-w-3xl mx-auto px-4 pb-2 text-center ${searched ? 'pt-10 sm:pt-12' : ''}`}>

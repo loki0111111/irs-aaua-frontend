@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 import API from '../services/api'
 
 function ProjectDetail() {
@@ -26,12 +25,11 @@ function ProjectDetail() {
   const serif = { fontFamily: "'Fraunces', serif" }
 
   const Shell = ({ children }) => (
-    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="flex-1 bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
       <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet"
       />
-      <Navbar />
       {children}
     </div>
   )
