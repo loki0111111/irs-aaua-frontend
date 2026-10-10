@@ -69,7 +69,7 @@ function ProjectDetail() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-6 pb-6 border-b border-neutral-200">
             {[
-              { label: 'Author(s)', value: project.authors },
+              { label: 'Authors', value: project.authors },
               { label: 'Supervisor', value: project.supervisor },
               { label: 'Department', value: project.department },
             ].map((f) => (

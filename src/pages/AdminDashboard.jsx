@@ -9,6 +9,7 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('projects')
 
   // Projects state
+  const [uploadStage, setUploadStage] = useState('')
   const [projects, setProjects] = useState([])
   const [uploading, setUploading] = useState(false)
   const [projectsLoading, setProjectsLoading] = useState(true)
@@ -128,9 +129,11 @@ function AdminDashboard() {
     formData.append('year', projectForm.year)
 
     if (file) {
-      try {
+            try {
+        setUploadStage('pdf')
         const pdfUrl = await uploadToCloudinary(file)
         formData.append('pdf_url', pdfUrl)
+        setUploadStage('saving')
       } catch (err) {
         setFormError('PDF upload failed. Try again.')
         setUploading(false)
@@ -149,8 +152,9 @@ function AdminDashboard() {
       fetchProjects()
     } catch (err) {
       setFormError('Upload failed. Please try again.')
-    } finally {
+        } finally {
       setUploading(false)
+      setUploadStage('')
     }
   }
 
@@ -361,7 +365,7 @@ function AdminDashboard() {
                 )}
                 <div className="flex gap-3">
                   <button onClick={handleProjectSubmit} className={btnPrimary} disabled={uploading}>
-                    {uploading ? (file ? 'Uploading PDF...' : 'Saving...') : (editProject ? 'Update' : 'Upload')}
+                    {uploading ? (uploadStage === 'pdf' ? 'Uploading PDF...' : 'Saving...') : (editProject ? 'Update' : 'Upload')}
                   </button>
                   <button onClick={resetProjectForm} className={btnSecondary}>Cancel</button>
                 </div>
