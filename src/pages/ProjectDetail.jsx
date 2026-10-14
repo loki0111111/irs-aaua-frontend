@@ -99,7 +99,7 @@ function ProjectDetail() {
                 View PDF
               </button>
               <a
-                href={`${import.meta.env.VITE_API_URL}/download.php?url=${encodeURIComponent(project.pdf_path)}&name=${encodeURIComponent(`${project.title} (${project.year.replace('/', '-')})`)}`}
+                href={project.pdf_path.replace('/upload/', `/upload/fl_attachment:${project.title.replace(/[^a-zA-Z0-9]+/g, '_')}_${project.year.replace('/', '-')}/`)}
                 className="border border-neutral-300 text-black text-xs uppercase font-medium px-5 py-2.5 rounded-md hover:border-black transition-colors"
                 style={{ letterSpacing: '0.08em' }}
               >
