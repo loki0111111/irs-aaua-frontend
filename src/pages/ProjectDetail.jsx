@@ -7,6 +7,7 @@ function ProjectDetail() {
   const navigate = useNavigate()
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -23,6 +24,35 @@ function ProjectDetail() {
   }, [id])
 
   const serif = { fontFamily: "'Fraunces', serif" }
+
+  const handleDownload = async () => {
+    const fileName = `${project.title.replace(/[^a-zA-Z0-9]+/g, '_')}_${project.year.replace('/', '-')}`
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+    if (!isMobile) {
+      window.location.href = project.pdf_path.replace('/upload/', `/upload/fl_attachment:${fileName}/`)
+      return
+    }
+
+    setDownloading(true)
+    try {
+      const res = await fetch(project.pdf_path)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(new Blob([blob], { type: 'application/octet-stream' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${fileName}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (err) {
+      console.error(err)
+      window.open(project.pdf_path, '_blank')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   const Shell = ({ children }) => (
     <div className="flex-1 bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -98,13 +128,14 @@ function ProjectDetail() {
               >
                 View PDF
               </button>
-              <a
-                href={project.pdf_path.replace('/upload/', `/upload/fl_attachment:${project.title.replace(/[^a-zA-Z0-9]+/g, '_')}_${project.year.replace('/', '-')}/`)}
-                className="border border-neutral-300 text-black text-xs uppercase font-medium px-5 py-2.5 rounded-md hover:border-black transition-colors"
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="border border-neutral-300 text-black text-xs uppercase font-medium px-5 py-2.5 rounded-md hover:border-black transition-colors disabled:opacity-50"
                 style={{ letterSpacing: '0.08em' }}
               >
-                Download
-              </a>
+                {downloading ? 'Downloading…' : 'Download'}
+              </button>
             </div>
           )}
         </div>
