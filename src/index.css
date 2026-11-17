@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --color-accent: #2E7D32;
+  --color-accent-dark: #1B5E20;
+}
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

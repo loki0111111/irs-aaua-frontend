@@ -14,22 +14,22 @@ function ProjectCard({ project }) {
   return (
     <Link
       to={`/project/${id}`}
-      className="block bg-white border border-neutral-200 rounded-lg px-5 py-4 shadow-sm hover:border-black transition-colors"
+      className="group block bg-white border border-neutral-200 rounded-lg px-5 py-4 shadow-sm hover:border-accent transition-colors"
     >
       <div className="flex items-start justify-between gap-4 mb-1.5">
         <h3
-          className="text-black text-[16px] font-semibold leading-snug"
+          className="text-black group-hover:text-accent transition-colors text-[16px] font-semibold leading-snug"
           style={{ fontFamily: "'Fraunces', serif" }}
         >
           {title}
         </h3>
-        <span className="shrink-0 text-neutral-500 text-xs font-medium">
+        <span className="shrink-0 text-accent text-xs font-medium">
           {year}
         </span>
       </div>
 
       <div className="text-neutral-500 text-xs mb-2">
-        {department}
+        <span className="text-accent font-medium">{department}</span>
         {supervisor && <> &middot; {supervisor}</>}
         {authors && <> &middot; {authors}</>}
       </div>

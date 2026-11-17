@@ -9,7 +9,7 @@ function Navbar() {
         >
           Adekunle Ajasin University
         </p>
-        <p className="text-neutral-500 text-xs leading-tight">Faculty of Computing Project Repository</p>
+        <p className="text-neutral-500 text-xs leading-tight">Department of Computer Science Project Repository</p>
       </div>
     </nav>
   )

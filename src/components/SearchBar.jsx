@@ -66,25 +66,29 @@ function FieldDropdown({ label, value, options, onChange, borderRight = true }) 
   )
 }
 
-function SearchBar({ onSearch, query, setQuery, departments }) {
-  const [department, setDepartment] = useState('')
+function SearchBar({ onSearch, query, setQuery, supervisors = [] }) {
   const [year, setYear] = useState('')
+  const [supervisor, setSupervisor] = useState('')
 
 const currentYear = new Date().getFullYear()
 const years = Array.from({ length: 10 }, (_, i) => {
   const start = currentYear - i
   return `${start}/${start + 1}`
 })
-  const deptNames = departments.map((d) => (typeof d === 'string' ? d : d.name)).filter(Boolean)
+  const supervisorNames = supervisors
+    .map((s) => (typeof s === 'string' ? s : s.name))
+    .filter(Boolean)
 
   const handleInputChange = (e) => {
     setQuery(e.target.value)
     onSearch({ q: e.target.value })
   }
 
-  const handleDeptChange = (val) => {
-    setDepartment(val)
-    onSearch({ department: val })
+
+
+    const handleSupervisorChange = (val) => {
+    setSupervisor(val)
+    onSearch({ supervisor: val })
   }
 
   const handleYearChange = (val) => {
@@ -129,10 +133,10 @@ const years = Array.from({ length: 10 }, (_, i) => {
 
         <div className="flex border-t border-neutral-200">
           <FieldDropdown
-            label="Department"
-            value={department}
-            options={deptNames}
-            onChange={handleDeptChange}
+            label="Supervisor"
+            value={supervisor}
+            options={supervisorNames}
+            onChange={handleSupervisorChange}
           />
           <FieldDropdown
             label="Year"

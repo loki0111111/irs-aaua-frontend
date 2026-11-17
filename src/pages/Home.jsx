@@ -22,23 +22,28 @@ function Home() {
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [query, setQuery] = useState('')
-  const [filters, setFilters] = useState({ department: '', year: '' })
-  const [departments, setDepartments] = useState([])
+  const [filters, setFilters] = useState({ department: '', year: '', supervisor: '' })
+    const [departments, setDepartments] = useState([])
+  const [supervisors, setSupervisors] = useState([])
   const debounceRef = useRef(null)
 
-  useEffect(() => {
-    const fetchDepts = async () => {
+    useEffect(() => {
+    const fetchLists = async () => {
       try {
         const res = await API.get('/get_departments.php')
         setDepartments(res.data.data || [])
       } catch (err) { console.error(err) }
+      try {
+        const res = await API.get('/get_supervisors.php')
+        setSupervisors(res.data.data || [])
+      } catch (err) { console.error(err) }
     }
-    fetchDepts()
+    fetchLists()
   }, [])
 
   const search = async (q, f) => {
-    if (!q && !f.department && !f.year) {
-      setSearched(false)
+    if (!q && !f.department && !f.year && !f.supervisor) {
+      setSearched(false)  
       setResults([])
       return
     }
@@ -67,6 +72,7 @@ function Home() {
     if (f.q !== undefined) setQuery(f.q)
     if (f.department !== undefined) setFilters(prev => ({ ...prev, department: f.department }))
     if (f.year !== undefined) setFilters(prev => ({ ...prev, year: f.year }))
+    if (f.supervisor !== undefined) setFilters(prev => ({ ...prev, supervisor: f.supervisor }))
   }
 
   return (
@@ -79,22 +85,22 @@ function Home() {
       <main className={`flex-1 flex flex-col ${searched ? 'justify-start' : 'justify-center pb-20'}`}>
         <section className={`w-full max-w-3xl mx-auto px-4 pb-2 text-center ${searched ? 'pt-10 sm:pt-12' : ''}`}>
           <div
-            className="inline-flex items-center gap-3 text-neutral-500 text-[11px] sm:text-xs font-medium uppercase mb-5 sm:mb-6"
+            className="inline-flex items-center gap-3 text-accent text-[11px] sm:text-xs font-medium uppercase mb-5 sm:mb-6"
             style={{ letterSpacing: '0.14em' }}
           >
             <span className="hidden sm:block w-6 h-px bg-neutral-300" />
-            Faculty of Computing &middot; Project Archive
+            Department of Computer Science &middot; Project Archive
             <span className="hidden sm:block w-6 h-px bg-neutral-300" />
           </div>
           <h1
             className="text-black text-3xl sm:text-5xl leading-tight mb-4"
             style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: '-0.01em' }}
           >
-            Every project this faculty{' '}<br className="hidden sm:block" />
-            has produced, <em className="italic font-medium">in one place.</em>
+            Every project this department{' '}<br className="hidden sm:block" />
+            has produced, <em className="italic font-medium text-accent">in one place.</em>
           </h1>
           <p className="text-neutral-600 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            Search final year projects by title, keyword, supervisor, department, or year.
+            Search final year projects by title, keyword, supervisor, or year.
           </p>
         </section>
 
@@ -103,6 +109,7 @@ function Home() {
           query={query}
           setQuery={setQuery}
           departments={departments}
+          supervisors={supervisors}
         />
 
         {searched && (
@@ -116,12 +123,12 @@ function Home() {
             {!loading && results.length === 0 && (
               <div className="text-center py-20">
                 <div
-                  className="w-16 h-16 rounded-full border-2 border-neutral-200 mx-auto mb-5 flex items-center justify-center text-neutral-400 font-medium"
+                  className="w-16 h-16 rounded-full border-2 border-red-300 bg-red-50 mx-auto mb-5 flex items-center justify-center text-red-500 font-medium"
                   style={{ fontSize: '11px' }}
                 >
                   N/A
                 </div>
-                <p className="text-black font-semibold text-base" style={{ fontFamily: "'Fraunces', serif" }}>
+                <p className="text-red-700 font-semibold text-base" style={{ fontFamily: "'Fraunces', serif" }}>
                   No matching records
                 </p>
                 <p className="text-neutral-600 text-sm mt-2">Try a different keyword or adjust your filters</p>
