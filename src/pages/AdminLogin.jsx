@@ -46,7 +46,7 @@ function AdminLogin() {
             <p className="text-black text-lg font-semibold" style={{ fontFamily: "'Fraunces', serif" }}>
               AAUA
             </p>
-            <p className="text-neutral-500 text-xs mt-0.5">Faculty of Computing</p>
+            <p className="text-neutral-500 text-xs mt-0.5">Department of Computer Science</p>
             <div
               className="inline-flex items-center gap-2 text-neutral-500 text-[10px] font-medium uppercase mt-4"
               style={{ letterSpacing: '0.12em' }}
@@ -107,7 +107,7 @@ function AdminLogin() {
         </div>
 
         <p className="text-center text-neutral-400 text-[11px] mt-6">
-          Restricted to authorised faculty administrators
+          Restricted to authorised administrators
         </p>
       </div>
     </div>

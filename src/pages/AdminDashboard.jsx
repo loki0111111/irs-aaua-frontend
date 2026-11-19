@@ -17,18 +17,17 @@ function AdminDashboard() {
   const [editProject, setEditProject] = useState(null)
   const [addingSupervisor, setAddingSupervisor] = useState(false)
   const [deletingSupervisorId, setDeletingSupervisorId] = useState(null)
-  const [addingDepartment, setAddingDepartment] = useState(false)
-  const [deletingDepartmentId, setDeletingDepartmentId] = useState(null)
   const [projectForm, setProjectForm] = useState({
-    title: '', abstract: '', authors: '', supervisor_id: '', department_id: '', year: ''
+    title: '', abstract: '', authors: '', supervisor_id: '', year: ''
   })
   const [file, setFile] = useState(null)
+  const [authorList, setAuthorList] = useState([''])
   const [formError, setFormError] = useState('')
-  const [projectFilter, setProjectFilter] = useState({ department_id: '', supervisor_id: '', year: '' })
+  const [projectFilter, setProjectFilter] = useState({ supervisor_id: '', year: '' })
 
-  // Departments state
+  // Departments (kept only so we can find the Computer Science id)
   const [departments, setDepartments] = useState([])
-  const [newDepartment, setNewDepartment] = useState('')
+  const csDepartment = departments.find(d => d.name === 'Computer Science')
 
   // Supervisors state
   const [supervisors, setSupervisors] = useState([])
@@ -71,7 +70,8 @@ function AdminDashboard() {
 
   // Project handlers
   const resetProjectForm = () => {
-    setProjectForm({ title: '', abstract: '', authors: '', supervisor_id: '', department_id: '', year: '' })
+    setProjectForm({ title: '', abstract: '', authors: '', supervisor_id: '', year: '' })
+    setAuthorList([''])
     setFile(null)
     setEditProject(null)
     setShowProjectForm(false)
@@ -83,9 +83,13 @@ function AdminDashboard() {
       abstract: project.abstract,
       authors: project.authors,
       supervisor_id: project.supervisor_id || '',
-      department_id: project.department_id || '',
       year: project.year,
     })
+        setAuthorList(
+      project.authors
+        ? project.authors.split(',').map(a => a.trim()).filter(Boolean)
+        : ['']
+    )
     setEditProject(project)
     setShowProjectForm(true)
   }
@@ -113,8 +117,13 @@ function AdminDashboard() {
   }
 
   const handleProjectSubmit = async () => {
-    if (!projectForm.title || !projectForm.authors || !projectForm.department_id || !projectForm.year) {
-      setFormError('Please fill in Title, Authors, Department and Year')
+    const authorsJoined = authorList.map(a => a.trim()).filter(Boolean).join(', ')
+    if (!projectForm.title || !authorsJoined || !projectForm.year) {
+      setFormError('Please fill in Title, Authors and Year')
+      return
+    }
+    if (!csDepartment) {
+      setFormError('Computer Science department not found. Refresh the page and try again.')
       return
     }
     setFormError('')
@@ -122,14 +131,14 @@ function AdminDashboard() {
 
     const formData = new FormData()
     formData.append('title', projectForm.title)
-    formData.append('authors', projectForm.authors)
+    formData.append('authors', authorsJoined)
     formData.append('abstract', projectForm.abstract)
-    formData.append('department_id', projectForm.department_id)
+    formData.append('department_id', csDepartment.id)
     formData.append('supervisor_id', projectForm.supervisor_id)
     formData.append('year', projectForm.year)
 
     if (file) {
-            try {
+      try {
         setUploadStage('pdf')
         const pdfUrl = await uploadToCloudinary(file)
         formData.append('pdf_url', pdfUrl)
@@ -152,33 +161,10 @@ function AdminDashboard() {
       fetchProjects()
     } catch (err) {
       setFormError('Upload failed. Please try again.')
-        } finally {
+    } finally {
       setUploading(false)
       setUploadStage('')
     }
-  }
-
-  // Department handlers
-  const handleAddDepartment = async () => {
-    if (!newDepartment.trim() || addingDepartment) return
-    setAddingDepartment(true)
-    try {
-      await API.post('/add_department.php', { name: newDepartment.trim() })
-      setNewDepartment('')
-      fetchDepartments()
-    } catch (err) { console.error(err) }
-    finally { setAddingDepartment(false) }
-  }
-
-  const handleDeleteDepartment = async (id) => {
-    if (!confirm('Delete this department?')) return
-    setDeletingDepartmentId(id)
-    try {
-      await API.delete(`/delete_department.php?id=${id}`)
-      setDepartments(prev => prev.filter(d => d.id !== id))
-      fetchDepartments()
-    } catch (err) { console.error(err) }
-    finally { setDeletingDepartmentId(null) }
   }
 
   // Supervisor handlers
@@ -209,15 +195,10 @@ function AdminDashboard() {
 
   // Filtered projects
   const filteredProjects = projects.filter(p => {
-    if (projectFilter.department_id && String(p.department_id) !== String(projectFilter.department_id)) return false
     if (projectFilter.supervisor_id && String(p.supervisor_id) !== String(projectFilter.supervisor_id)) return false
     if (projectFilter.year && String(p.year) !== String(projectFilter.year)) return false
     return true
   })
-
-  const filteredSupervisors = projectForm.department_id
-    ? supervisors.filter(s => String(s.department_id) === String(projectForm.department_id))
-    : supervisors
 
   const serif = { fontFamily: "'Fraunces', serif" }
 
@@ -228,10 +209,10 @@ function AdminDashboard() {
   const btnEdit = "text-black border border-neutral-300 px-3 py-1 rounded-md text-[11px] font-medium uppercase hover:border-black transition-colors"
 
   const currentYear = new Date().getFullYear()
-const yearOptions = Array.from({ length: 10 }, (_, i) => {
-  const start = currentYear - i
-  return `${start}/${start + 1}`
-})
+  const yearOptions = Array.from({ length: 10 }, (_, i) => {
+    const start = currentYear - i
+    return `${start}/${start + 1}`
+  })
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -245,7 +226,7 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => {
         <div className="flex items-center gap-3">
           <img src="/aaua-logo.jpg" alt="AAUA" className="h-10 w-10 object-contain grayscale" />
           <div>
-            <p className="font-semibold text-black text-base leading-tight" style={serif}>AAUA Faculty of Computing</p>
+            <p className="font-semibold text-black text-base leading-tight" style={serif}>AAUA Department of Computer Science</p>
             <p className="text-neutral-500 text-xs leading-tight">Admin Dashboard</p>
           </div>
         </div>
@@ -261,7 +242,7 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => {
       {/* Tabs */}
       <div className="border-b border-neutral-200 bg-white px-6">
         <div className="flex gap-6">
-          {['projects', 'supervisors', 'departments'].map(tab => (
+          {['projects', 'supervisors'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -294,14 +275,6 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => {
               <div className="flex gap-3 mb-5 flex-wrap">
                 <select
                   className={`${inputClass} w-auto`}
-                  value={projectFilter.department_id}
-                  onChange={e => setProjectFilter(prev => ({ ...prev, department_id: e.target.value }))}
-                >
-                  <option value="">All Departments</option>
-                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                <select
-                  className={`${inputClass} w-auto`}
                   value={projectFilter.supervisor_id}
                   onChange={e => setProjectFilter(prev => ({ ...prev, supervisor_id: e.target.value }))}
                 >
@@ -329,15 +302,36 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => {
                   <input placeholder="Title" value={projectForm.title}
                     onChange={e => setProjectForm({ ...projectForm, title: e.target.value })}
                     className={`col-span-2 ${inputClass}`} />
-                  <input placeholder="Authors (comma separated)" value={projectForm.authors}
-                    onChange={e => setProjectForm({ ...projectForm, authors: e.target.value })}
-                    className={`col-span-2 ${inputClass}`} />
-                  <select value={projectForm.department_id}
-                    onChange={e => setProjectForm({ ...projectForm, department_id: e.target.value, supervisor_id: '' })}
-                    className={inputClass}>
-                    <option value="">Select Department</option>
-                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                  </select>
+                                    <div className="col-span-2 flex flex-col gap-2">
+                    {authorList.map((name, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input
+                          placeholder={idx === 0 ? 'Author name' : `Author ${idx + 1} name`}
+                          value={name}
+                          onChange={e => setAuthorList(prev => prev.map((a, i) => i === idx ? e.target.value : a))}
+                          className={inputClass}
+                        />
+                        {idx === authorList.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setAuthorList(prev => [...prev, ''])}
+                            className={btnSecondary}
+                          >
+                            +
+                          </button>
+                        )}
+                        {authorList.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setAuthorList(prev => prev.filter((_, i) => i !== idx))}
+                            className={btnDanger}
+                          >
+                            x
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                   <select value={projectForm.supervisor_id}
                     onChange={e => setProjectForm({ ...projectForm, supervisor_id: e.target.value })}
                     className={inputClass}>
@@ -383,7 +377,7 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => {
                 <table className="w-full text-sm min-w-[600px]">
                   <thead className="bg-neutral-50 border-b border-neutral-200">
                     <tr>
-                      {['Title', 'Authors', 'Department', 'Year', 'Actions'].map(h => (
+                      {['Title', 'Authors', 'Year', 'Actions'].map(h => (
                         <th
                           key={h}
                           className="text-left px-4 py-3 text-neutral-500 font-medium text-[11px] uppercase"
@@ -399,70 +393,10 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => {
                       <tr key={p.id} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
                         <td className="px-4 py-3 text-black max-w-xs truncate">{p.title}</td>
                         <td className="px-4 py-3 text-neutral-600 max-w-xs truncate">{p.authors}</td>
-                        <td className="px-4 py-3 text-neutral-600">{p.department}</td>
                         <td className="px-4 py-3 text-neutral-600">{p.year}</td>
                         <td className="px-4 py-3 flex gap-2">
                           <button onClick={() => handleProjectEdit(p)} className={btnEdit}>Edit</button>
                           <button onClick={() => handleProjectDelete(p.id)} className={btnDanger}>Delete</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* DEPARTMENTS TAB */}
-        {activeTab === 'departments' && (
-          <div>
-            <h1 className="text-black font-semibold text-lg mb-6" style={serif}>Departments</h1>
-
-            <div className="bg-white border border-neutral-200 rounded-lg shadow-sm p-5 mb-6">
-              <h2
-                className="text-[11px] uppercase font-semibold text-neutral-500 mb-3"
-                style={{ letterSpacing: '0.08em' }}
-              >
-                Add Department
-              </h2>
-              <div className="flex gap-3">
-                <input placeholder="Department name" value={newDepartment}
-                  onChange={e => setNewDepartment(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAddDepartment()}
-                  className={inputClass} />
-                <button onClick={handleAddDepartment} className={btnPrimary} disabled={addingDepartment}>
-                  {addingDepartment ? 'Adding...' : 'Add'}
-                </button>
-              </div>
-            </div>
-
-            {departments.length === 0 ? (
-              <p className="text-center text-neutral-400 text-sm py-10">No departments added yet.</p>
-            ) : (
-              <div className="bg-white border border-neutral-200 rounded-lg shadow-sm overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 border-b border-neutral-200">
-                    <tr>
-                      {['Department', 'Actions'].map(h => (
-                        <th
-                          key={h}
-                          className="text-left px-4 py-3 text-neutral-500 font-medium text-[11px] uppercase"
-                          style={{ letterSpacing: '0.08em' }}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {departments.map((d, i) => (
-                      <tr key={d.id} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
-                        <td className="px-4 py-3 text-black">{d.name}</td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => handleDeleteDepartment(d.id)} className={btnDanger} disabled={deletingDepartmentId === d.id}>
-                            {deletingDepartmentId === d.id ? 'Deleting...' : 'Delete'}
-                          </button>
                         </td>
                       </tr>
                     ))}
